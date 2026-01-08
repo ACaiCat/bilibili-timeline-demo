@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">BiliTimelineDemo</string>
     <string name="title_activity_detail">DetailActivity</string>
+    <string name="timeline">动态</string>
+    <string name="up_homepage">UP主页</string>
+    <string name="no_any_followed">你还没有关注任何UP主!</string>
+    <string name="failed_get_up">无法获取UP信息!</string>
+    <string name="unfollow">取消关注</string>
+    <string name="unfollow_success">取关成功!</string>
+    <string name="followers">粉丝数: %d</string>
 </resources>

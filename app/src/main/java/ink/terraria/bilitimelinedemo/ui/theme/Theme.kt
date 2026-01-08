@@ -1,4 +1,4 @@
-package ink.terraria.bilitimelinedemo.theme
+package ink.terraria.bilitimelinedemo.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -33,7 +33,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun ArtSpaceTheme(
+fun TimeLineTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

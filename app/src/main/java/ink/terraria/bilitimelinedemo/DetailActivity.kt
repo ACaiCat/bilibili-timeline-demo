@@ -4,38 +4,36 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ink.terraria.bilitimelinedemo.model.UpData
+import ink.terraria.bilitimelinedemo.model.Up
+import ink.terraria.bilitimelinedemo.ui.theme.TimeLineTheme
 
 class DetailActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -43,99 +41,115 @@ class DetailActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val context = LocalActivity.current
-            val upData = intent.getParcelableExtra<UpData>("UP_DATA")!!
-            Surface(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text(text = "UP主页") },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = Color(0xfffff8f6),
-                                titleContentColor = Color.Black
-                            )
-                        )
-                    }
-                )
-                { paddingValues ->
+            TimeLineTheme {
+                val up = intent.getParcelableExtra("UP_DATA", Up::class.java)
 
-                    Card(
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .padding(10.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Row {
-                                Card(
-                                    shape = RoundedCornerShape(100),
-                                    elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 8.dp
-                                    ),
-                                ) {
-                                    Image(
-                                        painter = painterResource(upData.avatar),
-                                        contentDescription = upData.name,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(125.dp)
-                                    )
-                                }
+                if (up == null) {
+                    Toast.makeText(this, stringResource(R.string.failed_get_up), Toast.LENGTH_SHORT)
+                        .show()
+                    finish()
+                    return@TimeLineTheme
+                }
 
-                                Spacer(modifier = Modifier.padding(15.dp))
-                                Column {
+                Surface(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = {
                                     Text(
-                                        text = upData.name,
-                                        fontSize = 50.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        textAlign = TextAlign.Start,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
+                                        text = stringResource(R.string.up_homepage),
+                                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                        fontWeight = MaterialTheme.typography.headlineMedium.fontWeight,
+                                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle
                                     )
-                                    Button(
-                                        onClick = {
-                                            val intent = Intent().apply {
-                                                putExtra("UNFOLLOW", upData.name)
-                                            }
-                                            setResult(RESULT_OK, intent)
-                                            Toast.makeText(context, "取关成功", Toast.LENGTH_SHORT)
-                                                .show()
-                                            finish()
-                                        },
-                                        colors = ButtonColors(
-                                            containerColor = Color(0xfffedad4),
-                                            contentColor = Color.Black,
-                                            Color.Gray,
-                                            Color.DarkGray
-                                        ),
-                                        shape = RoundedCornerShape(10)
-                                    ) {
-                                        Text("取消关注")
-                                    }
-                                }
-
-
-                            }
-
-                            Text(
-                                text = "粉丝: ${upData.follower}",
-                                fontSize = 40.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                textDecoration = TextDecoration.Underline,
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                                }, colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
+                    )
+                    { paddingValues ->
+                        UpHomepage(
+                            up = up,
+                            modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
+                        )
                     }
                 }
             }
         }
+
+    }
+
+    @Composable
+    fun UpHomepage(up: Up, modifier: Modifier = Modifier) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = modifier
+                .padding(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Card(
+                    shape = CircleShape,
+                ) {
+                    Image(
+                        painter = painterResource(up.avatar),
+                        contentDescription = up.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = up.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    Button(
+                        onClick = {
+                            val intent = Intent().apply {
+                                putExtra("UNFOLLOW", up.name)
+                            }
+                            setResult(RESULT_OK, intent)
+                            Toast.makeText(
+                                this@DetailActivity,
+                                this@DetailActivity.getString(R.string.unfollow_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    ) {
+                        Text(stringResource(R.string.unfollow))
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.followers, up.follower),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+        }
     }
 }
+
 

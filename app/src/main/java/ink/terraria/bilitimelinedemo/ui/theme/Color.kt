@@ -1,4 +1,4 @@
-package ink.terraria.bilitimelinedemo.theme
+package ink.terraria.bilitimelinedemo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

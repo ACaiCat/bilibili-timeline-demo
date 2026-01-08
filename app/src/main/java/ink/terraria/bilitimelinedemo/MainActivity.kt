@@ -1,256 +1,257 @@
 package ink.terraria.bilitimelinedemo
 
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ink.terraria.bilitimelinedemo.data.DataSender
-import ink.terraria.bilitimelinedemo.model.PostData
-import ink.terraria.bilitimelinedemo.model.UpData
+import ink.terraria.bilitimelinedemo.model.Post
+import ink.terraria.bilitimelinedemo.model.Up
+import ink.terraria.bilitimelinedemo.ui.theme.TimeLineTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
-    private val upData = mutableStateListOf<UpData>()
-    private val postData = mutableStateListOf<PostData>()
-
-    private val detailActivityLuncher = registerForActivityResult(
+    val viewModel: TimeLineViewModel by viewModels()
+    val detailActivityLuncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val unfollowUpName = result.data?.getStringExtra("UNFOLLOW")!!
+        if (result.resultCode != RESULT_OK) {
+            return@registerForActivityResult
 
-            upData.removeAll { data -> data.name == unfollowUpName }
-            postData.removeAll { data -> data.author.name == unfollowUpName }
         }
 
+        val unfollowUpName =
+            result.data?.getStringExtra("UNFOLLOW") ?: return@registerForActivityResult
+
+        viewModel.removeUp(unfollowUpName)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        upData.addAll(DataSender().createUpData())
-        postData.addAll(DataSender().createPostData())
         enableEdgeToEdge()
         setContent {
-            Surface(
-                color = Color(0xfffff8f6),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text(text = "动态") },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = Color(0xfffff8f6),
-                                titleContentColor = Color.Black
+            TimeLineTheme {
+                TimeLineScreen()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Preview
+    @Composable
+    fun TimeLineScreen(
+    ) {
+        val uiState = viewModel.uiState.collectAsState()
+        Surface(
+            color = MaterialTheme.colorScheme.primary, modifier = Modifier.fillMaxSize()
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(R.string.timeline),
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = MaterialTheme.typography.headlineMedium.fontWeight,
+                                fontStyle = MaterialTheme.typography.headlineMedium.fontStyle
                             )
+                        }, colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }) { paddingValues ->
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = paddingValues.calculateTopPadding())
+                        .padding(horizontal = 8.dp)
+                ) {
+                    item {
+                        FollowedUp(
+                            uiState.value.ups, Modifier.padding(vertical = 16.dp)
                         )
                     }
-                )
-                { paddingValues ->
-                    Column(
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .padding(horizontal = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
 
-                        ) {
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardColors(
-                                Color(0xfffcebe7),
-                                Color.Black,
-                                Color.Gray,
-                                Color.DarkGray
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 8.dp
-                            ),
-                        ) {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp)
-                            ) {
-                                itemsIndexed(upData) { index, data ->
-                                    UpView(data)
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.padding(10.dp))
-
-
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            itemsIndexed(postData) { index, data ->
-                                PostView(data)
-                            }
-
-                        }
-
-
+                    items(uiState.value.posts) { post ->
+                        PostCard(post)
                     }
+                }
+            }
 
+        }
+    }
+
+    @Composable
+    fun FollowedUp(
+        ups: List<Up>, modifier: Modifier = Modifier
+    ) {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                MaterialTheme.colorScheme.surfaceContainer,
+                MaterialTheme.colorScheme.onSurface,
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 8.dp
+            ),
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            if (ups.isEmpty()) {
+                return@Card
+            }
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            ) {
+                items(ups) { data ->
+                    UpAvatar(data)
                 }
             }
         }
     }
 
     @Composable
-    fun PostView(postData: PostData) {
+    fun PostCard(post: Post, modifier: Modifier = Modifier) {
         Card(
-            shape = RoundedCornerShape(15.dp),
-            colors = CardColors(
-                Color(0xfffcebe7),
-                Color.Black,
-                Color.Gray,
-                Color.DarkGray
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                MaterialTheme.colorScheme.surfaceContainer,
+                MaterialTheme.colorScheme.onSurface,
             ),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
             ),
+            modifier = modifier,
         ) {
             Column(
-                modifier = Modifier
-                    .padding(10.dp)
+                modifier = Modifier.padding(8.dp)
             ) {
-                Row {
-                    Card(shape = RoundedCornerShape(100)) {
+                Row(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Card(shape = CircleShape) {
                         Image(
-                            painter = painterResource(postData.author.avatar),
-                            contentDescription = postData.author.name,
+                            painter = painterResource(post.author.avatar),
+                            contentDescription = post.author.name,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(40.dp)
+                            modifier = Modifier.size(40.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.padding(2.dp))
-
                     Column {
                         Text(
-                            text = postData.author.name,
-                            fontSize = 19.sp,
-                            fontWeight = FontWeight.Bold,
+                            text = post.author.name,
+                            style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Start,
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = postData.postDate.toString(),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
+                            text = post.postDate.toString(),
+                            style = MaterialTheme.typography.labelSmall,
                             textAlign = TextAlign.Start,
-                            color = Color.Gray,
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
                 Text(
-                    text = postData.title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Normal,
+                    text = post.title,
+                    style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Start,
                     color = Color.Black,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(bottom = 8.dp)
                 )
                 Card(shape = RoundedCornerShape(5)) {
                     Image(
-                        painter = painterResource(postData.cover),
-                        contentDescription = postData.author.name,
+                        painter = painterResource(post.cover),
+                        contentDescription = post.author.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
 
             }
-
         }
     }
 
     @Composable
-    fun UpView(upData: UpData) {
-        val context = LocalContext.current
+    fun UpAvatar(up: Up, modifier: Modifier = Modifier) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .clickable(
                     onClick = {
-                        val intent = Intent(context, DetailActivity::class.java)
-                        intent.putExtra("UP_DATA", upData)
+                        val intent = Intent(this, DetailActivity::class.java).apply {
+                            putExtra("UP_DATA", up)
+                        }
                         detailActivityLuncher.launch(intent)
-                    },
-                    indication = null,
-                    interactionSource = null
-                )
+                    })
         ) {
-
             Card(
-                shape = RoundedCornerShape(100),
-                modifier = Modifier
-                    .padding(10.dp)
+                shape = CircleShape, modifier = Modifier.padding(8.dp)
             ) {
 
                 Image(
-                    painter = painterResource(upData.avatar),
-                    contentDescription = upData.name,
+                    painter = painterResource(up.avatar),
+                    contentDescription = up.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(65.dp)
                 )
 
             }
             Text(
-                text = upData.name,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                text = up.name,
+                style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
