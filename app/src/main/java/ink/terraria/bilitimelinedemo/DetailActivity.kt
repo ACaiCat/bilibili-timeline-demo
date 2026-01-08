@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ink.terraria.bilitimelinedemo.model.UpData
 
 class DetailActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +46,6 @@ class DetailActivity : ComponentActivity() {
             val context = LocalActivity.current
             val upData = intent.getParcelableExtra<UpData>("UP_DATA")!!
             Surface(
-                color = Color(0xfffff8f6),
                 modifier = Modifier.fillMaxSize()
             ) {
                 Scaffold(
@@ -63,12 +62,6 @@ class DetailActivity : ComponentActivity() {
                 { paddingValues ->
 
                     Card(
-                        colors = CardColors(
-                            Color(0xfffcebe7),
-                            Color.Black,
-                            Color.Gray,
-                            Color.DarkGray
-                        ),
                         modifier = Modifier
                             .padding(paddingValues)
                             .padding(10.dp)

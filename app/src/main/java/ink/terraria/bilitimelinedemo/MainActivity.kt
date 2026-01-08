@@ -41,6 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ink.terraria.bilitimelinedemo.data.DataSender
+import ink.terraria.bilitimelinedemo.model.PostData
+import ink.terraria.bilitimelinedemo.model.UpData
 
 
 @OptIn(ExperimentalMaterial3Api::class)
