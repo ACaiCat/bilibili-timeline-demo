@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,12 +49,11 @@ import ink.terraria.bilitimelinedemo.ui.theme.TimeLineTheme
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     val viewModel: TimeLineViewModel by viewModels()
-    val detailActivityLuncher = registerForActivityResult(
+    val detailActivityLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode != RESULT_OK) {
             return@registerForActivityResult
-
         }
 
         val unfollowUpName =
@@ -89,9 +87,7 @@ class MainActivity : ComponentActivity() {
                         title = {
                             Text(
                                 text = stringResource(R.string.timeline),
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                fontWeight = MaterialTheme.typography.headlineMedium.fontWeight,
-                                fontStyle = MaterialTheme.typography.headlineMedium.fontStyle
+                                style = MaterialTheme.typography.headlineMedium
                             )
                         }, colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -106,13 +102,19 @@ class MainActivity : ComponentActivity() {
                         .padding(top = paddingValues.calculateTopPadding())
                         .padding(horizontal = 8.dp)
                 ) {
+
+
+                    val displayUPs = uiState.value.posts.filter {
+                        (uiState.value.currentUpName.isEmpty() || it.author.name == uiState.value.currentUpName)
+                    }
+
                     item {
                         FollowedUp(
                             uiState.value.ups, Modifier.padding(vertical = 16.dp)
                         )
                     }
 
-                    items(uiState.value.posts) { post ->
+                    items(displayUPs) { post ->
                         PostCard(post)
                     }
                 }
@@ -126,20 +128,17 @@ class MainActivity : ComponentActivity() {
         ups: List<Up>, modifier: Modifier = Modifier
     ) {
         Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
+            shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(
                 MaterialTheme.colorScheme.surfaceContainer,
                 MaterialTheme.colorScheme.onSurface,
-            ),
-            elevation = CardDefaults.cardElevation(
+            ), elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
-            ),
-            modifier = modifier
-                .fillMaxWidth()
+            ), modifier = modifier.fillMaxWidth()
         ) {
             if (ups.isEmpty()) {
                 return@Card
             }
+
 
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -148,6 +147,8 @@ class MainActivity : ComponentActivity() {
                     .padding(vertical = 16.dp)
             ) {
                 items(ups) { data ->
+
+
                     UpAvatar(data)
                 }
             }
@@ -203,7 +204,6 @@ class MainActivity : ComponentActivity() {
                     text = post.title,
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Start,
-                    color = Color.Black,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp)
@@ -227,14 +227,14 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .clickable(
-                    onClick = {
-                        val intent = Intent(this, DetailActivity::class.java).apply {
-                            putExtra("UP_DATA", up)
-                        }
-                        detailActivityLuncher.launch(intent)
-                    })
-        ) {
+                .combinedClickable(onLongClick = {
+                    val intent = Intent(this, DetailActivity::class.java).apply {
+                        putExtra("UP_DATA", up)
+                    }
+                    detailActivityLauncher.launch(intent)
+                }, onClick = {
+                    viewModel.switchUpPost(up.name)
+                })) {
             Card(
                 shape = CircleShape, modifier = Modifier.padding(8.dp)
             ) {

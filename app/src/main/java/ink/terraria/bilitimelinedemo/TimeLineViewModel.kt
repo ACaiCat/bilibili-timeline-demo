@@ -14,9 +14,24 @@ class TimeLineViewModel : ViewModel() {
 
     fun removeUp(name: String) {
         _uiState.update { currentState ->
-            currentState.copy(
+
+            val state = currentState.copy(
                 ups = currentState.ups.filterNot { it.name == name }.toMutableList(),
                 posts = currentState.posts.filterNot { it.author.name == name }.toMutableList(),
+            )
+
+            if (state.currentUpName == name) {
+                state.copy(currentUpName = "")
+            } else {
+                state
+            }
+        }
+    }
+
+    fun switchUpPost(name: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                currentUpName = name
             )
         }
     }

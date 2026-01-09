@@ -1,6 +1,7 @@
 package ink.terraria.bilitimelinedemo
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -42,7 +43,11 @@ class DetailActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TimeLineTheme {
-                val up = intent.getParcelableExtra("UP_DATA", Up::class.java)
+                val up = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra("UP_DATA", Up::class.java)
+                } else {
+                    intent.getParcelableExtra("UP_DATA")
+                }
 
                 if (up == null) {
                     Toast.makeText(this, stringResource(R.string.failed_get_up), Toast.LENGTH_SHORT)
@@ -60,9 +65,7 @@ class DetailActivity : ComponentActivity() {
                                 title = {
                                     Text(
                                         text = stringResource(R.string.up_homepage),
-                                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                        fontWeight = MaterialTheme.typography.headlineMedium.fontWeight,
-                                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle
+                                        style = MaterialTheme.typography.headlineMedium
                                     )
                                 }, colors = TopAppBarDefaults.topAppBarColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,

@@ -6,5 +6,6 @@ import java.util.Collections.emptyList
 
 data class TimeLineUiState(
     val ups: MutableList<Up> = emptyList(),
-    val posts: MutableList<Post> = emptyList()
+    val posts: MutableList<Post> = emptyList(),
+    val currentUpName: String = ""
 )
