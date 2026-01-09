@@ -133,7 +133,8 @@ class MainActivity : ComponentActivity() {
                 MaterialTheme.colorScheme.onSurface,
             ), elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
-            ), modifier = modifier.fillMaxWidth()
+            ),
+            modifier = modifier.fillMaxWidth()
         ) {
             if (ups.isEmpty()) {
                 return@Card
@@ -227,16 +228,23 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .combinedClickable(onLongClick = {
-                    val intent = Intent(this, DetailActivity::class.java).apply {
-                        putExtra("UP_DATA", up)
-                    }
-                    detailActivityLauncher.launch(intent)
-                }, onClick = {
-                    viewModel.switchUpPost(up.name)
-                })) {
+                .padding(horizontal = 8.dp)
+                .clip(RoundedCornerShape(10))
+                .combinedClickable(
+                    onLongClick = {
+                        val intent = Intent(this, DetailActivity::class.java).apply {
+                            putExtra("UP_DATA", up)
+                        }
+                        detailActivityLauncher.launch(intent)
+                    },
+                    onClick = {
+                        viewModel.switchUpPost(up.name)
+                    })
+
+        ) {
             Card(
-                shape = CircleShape, modifier = Modifier.padding(8.dp)
+                shape = CircleShape,
+                modifier = Modifier.padding(8.dp)
             ) {
 
                 Image(

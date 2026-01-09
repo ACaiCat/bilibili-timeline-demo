@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import ink.terraria.bilitimelinedemo.model.Up
 import ink.terraria.bilitimelinedemo.ui.theme.TimeLineTheme
 
+@Suppress("DEPRECATION")
 class DetailActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
